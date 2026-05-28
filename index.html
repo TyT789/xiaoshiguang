@@ -450,20 +450,38 @@ function renderAdd(){
   currentFoods = getFilteredFoods();
 
   // 分类
-  var ct='<button class="cat-tag'+(activeCat==='all'?' active':'')+'" onclick="activeCat=\'all\';renderAdd();"><span class="ce">🍽️</span>全部</button>';
+  var ct='';
+  ct+='<button class="cat-tag'+(activeCat==='all'?' active':'')+'" data-cat="all"><span class="ce">🍽️</span>全部</button>';
   Object.keys(CATS).forEach(function(k){
     var v=CATS[k];
-    ct+='<button class="cat-tag'+(activeCat===k?' active':'')+'" onclick="activeCat=\''+k+'\';renderAdd();"><span class="ce '+CAT_ANIM[k]+'">'+v.emoji+'</span>'+v.name+'</button>';
+    ct+='<button class="cat-tag'+(activeCat===k?' active':'')+'" data-cat="'+k+'"><span class="ce '+CAT_ANIM[k]+'">'+v.emoji+'</span>'+v.name+'</button>';
   });
-  document.getElementById('catBar').innerHTML = ct;
+  var catEl = document.getElementById('catBar');
+  catEl.innerHTML = ct;
+  // DOM 属性绑定 cat 按钮
+  var catBtns = catEl.querySelectorAll('.cat-tag');
+  for(var cbi=0; cbi<catBtns.length; cbi++){
+    catBtns[cbi].onclick = (function(cat){
+      return function(){ activeCat=cat; renderAdd(); };
+    })(catBtns[cbi].getAttribute('data-cat'));
+  }
 
-  // 食物 — onclick 为主 + 事件委托兜底
+  // 食物列表
   var fl='';
-  currentFoods.forEach(function(f,i){
+  for(var fi=0; fi<currentFoods.length; fi++){
+    var f=currentFoods[fi];
     var em = f.e || CAT_EMOJI[f.c] || '🍽️';
-    fl+='<div class="food-item" data-fi="'+i+'" onclick="openFood('+i+')"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+em+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
-  });
-  document.getElementById('foodList').innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
+    fl+='<div class="food-item" data-fi="'+fi+'"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+em+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
+  }
+  var listEl = document.getElementById('foodList');
+  listEl.innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
+  // DOM 属性绑定每个食物项的 onclick
+  var foodItems = listEl.querySelectorAll('.food-item');
+  for(var fii=0; fii<foodItems.length; fii++){
+    foodItems[fii].onclick = (function(idx){
+      return function(){ openFood(idx); };
+    })(fii);
+  }
 }
 
 function filterFoods(){ activeCat='all'; renderAdd(); }
@@ -498,10 +516,10 @@ function buildFoodModal(){
   var intake = doIntake(selFood, selGrams);
   var h = '';
   h += '<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+em+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
-  h += '<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" oninput="onGramsChange()" placeholder="克数"><span class="g-unit">g</span></div>';
+  h += '<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" placeholder="克数"><span class="g-unit">g</span></div>';
   h += '<div class="quick-g">';
   [50,100,150,200,300,500].forEach(function(g){
-    h += '<button class="qg'+(selGrams===g?' on':'')+'" onclick="setGrams('+g+')">'+g+'g</button>';
+    h += '<button class="qg'+(selGrams===g?' on':'')+'" data-g="'+g+'">'+g+'g</button>';
   });
   h += '</div>';
   if(selGrams > 0){
@@ -509,13 +527,29 @@ function buildFoodModal(){
   }
   h += '<div class="meal-row">';
   Object.keys(MEALS).forEach(function(m){
-    h += '<button class="mo'+(selMeal===m?' on':'')+'" onclick="selMeal=\''+m+'\';buildFoodModal();">'+MEALS[m]+'</button>';
+    h += '<button class="mo'+(selMeal===m?' on':'')+'" data-meal="'+m+'">'+MEALS[m]+'</button>';
   });
   h += '</div>';
-  h += '<div class="btn-row"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="confirmAdd()" '+(selGrams<=0?'disabled':'')+'>确认添加</button></div>';
+  h += '<div class="btn-row"><button class="btn btn-o" id="btnCancel">取消</button><button class="btn btn-p" id="btnConfirm" '+(selGrams<=0?'disabled':'')+'>确认添加</button></div>';
 
   document.getElementById('modalContent').innerHTML = h;
   document.getElementById('foodModal').classList.add('show');
+
+  // DOM 属性绑定弹窗内的按钮事件
+  var gramsInput = document.getElementById('gramsInput');
+  if(gramsInput) gramsInput.oninput = function(){ onGramsChange(); };
+  var qgBtns = document.querySelectorAll('#modalContent .qg');
+  for(var qi=0; qi<qgBtns.length; qi++){
+    qgBtns[qi].onclick = (function(g){ return function(){ setGrams(g); }; })(parseInt(qgBtns[qi].getAttribute('data-g')));
+  }
+  var moBtns = document.querySelectorAll('#modalContent .mo');
+  for(var mi=0; mi<moBtns.length; mi++){
+    moBtns[mi].onclick = (function(m){ return function(){ selMeal=m; buildFoodModal(); }; })(moBtns[mi].getAttribute('data-meal'));
+  }
+  var btnCancel = document.getElementById('btnCancel');
+  if(btnCancel) btnCancel.onclick = function(){ closeModal(); };
+  var btnConfirm = document.getElementById('btnConfirm');
+  if(btnConfirm) btnConfirm.onclick = function(){ confirmAdd(); };
 }
 
 // 事件委托：foodList 点击 (兜底)
