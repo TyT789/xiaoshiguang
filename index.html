@@ -228,7 +228,7 @@ select.picker { font-size: 14px; color: var(--text); background: var(--bg); bord
 </div>
 
 <!-- 食物详情弹窗 -->
-<div class="modal-mask" id="foodModal" onclick="if(event.target===this)closeModal()">
+<div class="modal-mask" id="foodModal" onclick="var e=event||window.event;if(e&&e.target===this)closeModal()">
   <div class="modal-card" id="modalContent"></div>
 </div>
 
@@ -308,7 +308,7 @@ var MEALS = {breakfast:'🌅 早餐',lunch:'☀️ 午餐',dinner:'🌙 晚餐',
 var AL = [{v:1.2,l:'几乎不运动'},{v:1.375,l:'每周 1-3 次'},{v:1.55,l:'每周 3-5 次'},{v:1.725,l:'每周 6-7 次'},{v:1.9,l:'运动员级别'}];
 
 var API = 'http://localhost:3000';
-var activeCat = 'all', selFood = null, selMeal = 'lunch', selGrams = 100, curDate = '';
+var activeCat = 'all', selFood = null, selMeal = 'lunch', selGrams = 100, curDate = '', currentFoods = [];
 
 // ================ 工具函数 ================
 function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate()); }
@@ -442,7 +442,7 @@ function getFilteredFoods(){
 }
 
 function renderAdd(){
-  var foods=getFilteredFoods();
+  currentFoods = getFilteredFoods();
 
   // 分类
   var ct='<button class="cat-tag'+(activeCat==='all'?' active':'')+'" onclick="activeCat=\'all\';renderAdd();"><span class="ce">🍽️</span>全部</button>';
@@ -452,10 +452,10 @@ function renderAdd(){
   });
   document.getElementById('catBar').innerHTML = ct;
 
-  // 食物
+  // 食物 — 用 data-index + 事件委托替代 inline onclick
   var fl='';
-  foods.forEach(function(f,i){
-    fl+='<div class="food-item" onclick="openFood('+i+')"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+CAT_EMOJI[f.c]+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
+  currentFoods.forEach(function(f,i){
+    fl+='<div class="food-item" data-fi="'+i+'"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+CAT_EMOJI[f.c]+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
   });
   document.getElementById('foodList').innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
 }
@@ -463,54 +463,56 @@ function renderAdd(){
 function filterFoods(){ activeCat='all'; renderAdd(); }
 
 function openFood(i){
-  var foods=getFilteredFoods();
-  selFood=foods[i];
-  selGrams=selFood.ps?1:100;
-  selMeal='lunch';
+  selFood = currentFoods[i];
+  if(!selFood){ return; }
+  selGrams = selFood.ps ? 1 : 100;
+  selMeal = 'lunch';
+  var curIdx = i;
 
-  var intake=doIntake(selFood,selGrams);
-  var h='';
-  h+='<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+CAT_EMOJI[selFood.c]+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
-  h+='<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" oninput="onGramsChange()" placeholder="克数"><span class="g-unit">g</span></div>';
-  h+='<div class="quick-g">';
+  buildFoodModal();
+}
+
+function buildFoodModal(){
+  if(!selFood) return;
+  var intake = doIntake(selFood, selGrams);
+  var h = '';
+  h += '<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+CAT_EMOJI[selFood.c]+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
+  h += '<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" oninput="onGramsChange()" placeholder="克数"><span class="g-unit">g</span></div>';
+  h += '<div class="quick-g">';
   [50,100,150,200,300,500].forEach(function(g){
-    h+='<button class="qg'+(selGrams===g?' on':'')+'" onclick="setGrams('+g+')">'+g+'g</button>';
+    h += '<button class="qg'+(selGrams===g?' on':'')+'" onclick="setGrams('+g+')">'+g+'g</button>';
   });
-  h+='</div>';
-  if(selGrams>0){
-    h+='<div class="est"><span class="el">预估摄入</span><div class="er"><span>🔥 '+intake.cal+' kcal</span><span>🥩 '+intake.protein+'g 蛋白</span><span>🧈 '+intake.fat+'g 脂肪</span><span>🍞 '+intake.carb+'g 碳水</span></div></div>';
+  h += '</div>';
+  if(selGrams > 0){
+    h += '<div class="est"><span class="el">预估摄入</span><div class="er"><span>🔥 '+intake.cal+' kcal</span><span>🥩 '+intake.protein+'g 蛋白</span><span>🧈 '+intake.fat+'g 脂肪</span><span>🍞 '+intake.carb+'g 碳水</span></div></div>';
   }
-  h+='<div class="meal-row">';
+  h += '<div class="meal-row">';
   Object.keys(MEALS).forEach(function(m){
-    h+='<button class="mo'+(selMeal===m?' on':'')+'" onclick="selMeal=\''+m+'\';openFood('+i+')">'+MEALS[m]+'</button>';
+    h += '<button class="mo'+(selMeal===m?' on':'')+'" onclick="selMeal=\''+m+'\';buildFoodModal();">'+MEALS[m]+'</button>';
   });
-  h+='</div>';
-  h+='<div class="btn-row"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="confirmAdd()" '+(selGrams<=0?'disabled':'')+'>确认添加</button></div>';
+  h += '</div>';
+  h += '<div class="btn-row"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="confirmAdd()" '+(selGrams<=0?'disabled':'')+'>确认添加</button></div>';
 
   document.getElementById('modalContent').innerHTML = h;
   document.getElementById('foodModal').classList.add('show');
 }
 
+// 事件委托：foodList 点击
+document.getElementById('foodList').addEventListener('click', function(e){
+  var item = e.target.closest('.food-item');
+  if(!item) return;
+  var idx = parseInt(item.getAttribute('data-fi'));
+  if(!isNaN(idx)) openFood(idx);
+});
+
 function onGramsChange(){
   selGrams = parseInt(document.getElementById('gramsInput').value) || 0;
-  refreshModal();
+  buildFoodModal();
 }
 
 function setGrams(g){
   selGrams = g;
-  document.getElementById('gramsInput').value = g;
-  document.querySelectorAll('.qg').forEach(function(q){ q.classList.toggle('on',parseInt(q.textContent)===g); });
-  refreshModal();
-}
-
-function refreshModal(){
-  var intake = doIntake(selFood,selGrams);
-  var est = document.querySelector('.est');
-  if(est && selGrams>0){
-    est.innerHTML = '<span class="el">预估摄入</span><div class="er"><span>🔥 '+intake.cal+' kcal</span><span>🥩 '+intake.protein+'g 蛋白</span><span>🧈 '+intake.fat+'g 脂肪</span><span>🍞 '+intake.carb+'g 碳水</span></div>';
-  }
-  var confirmBtn = document.querySelector('.btn-p');
-  if(confirmBtn) confirmBtn.disabled = selGrams <= 0;
+  buildFoodModal();
 }
 
 function closeModal(){
