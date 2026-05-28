@@ -478,21 +478,19 @@ function renderAdd(){
   // DOM 属性绑定每个食物项的 onclick
   var foodItems = listEl.querySelectorAll('.food-item');
   for(var fii=0; fii<foodItems.length; fii++){
-    foodItems[fii].onclick = (function(idx){
-      return function(){ openFood(idx); };
-    })(fii);
+    foodItems[fii]._idx = fii;
+    foodItems[fii].onclick = function(){ openFood(this._idx); };
   }
 }
 
 function filterFoods(){ activeCat='all'; renderAdd(); }
 
-// 食物点击处理 — 容器级 onclick，最兼容方式
+// 容器级 onclick — 手动 DOM 遍历找到 .food-item（零依赖，极简）
 function handleFoodClick(e){
   e = e || window.event;
   var t = e.target || e.srcElement;
-  // 从点击位置向上遍历，找到 .food-item
-  while(t && t !== this){
-    if(t.className && (' '+t.className+' ').indexOf(' food-item ')>-1){
+  while(t && t !== document.body){
+    if(t.getAttribute && t.getAttribute('data-fi') !== null){
       var idx = parseInt(t.getAttribute('data-fi'));
       if(!isNaN(idx)){ openFood(idx); return; }
     }
