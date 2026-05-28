@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#FFF8F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>小食光 - 健身饮食追踪</title>
+<style>
+:root {
+  --bg: #FFF8F0;
+  --card: #FFFAF5;
+  --caramel: #C8956D;
+  --warm: #F0C9A0;
+  --matcha: #B8C9A8;
+  --coral: #F0A8A8;
+  --text: #5C4033;
+  --text-light: #B8A090;
+  --text-lighter: #D0C0B0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 110px;
+}
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px;
+  margin: 12px 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.04);
+}
+.btn {
+  border-radius: 30px;
+  padding: 11px 28px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 0.2s;
+}
+.btn-p { background: var(--caramel); color: #fff; }
+.btn-o { background: transparent; border: 2px solid var(--caramel); color: var(--caramel); }
+.btn-g { background: var(--matcha); color: #fff; width: 100%; }
+.btn-s { padding: 7px 18px; font-size: 12px; border-radius: 20px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* 导航 */
+#bottomNav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 500px; display: flex; background: var(--card);
+  padding: 8px 0 env(safe-area-inset-bottom); z-index: 100;
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.03);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 6px; color: var(--text-light); font-size: 11px; cursor: pointer;
+  border: none; background: none; transition: color 0.2s;
+}
+.nav-item.active { color: var(--caramel); }
+.nav-emoji { font-size: 22px; margin-bottom: 2px; }
+/* 动画 */
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} 50%{transform:translateY(-2px)} }
+@keyframes sway { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-4deg)} 75%{transform:rotate(4deg)} }
+@keyframes spin { 0%,100%{transform:rotate(0)} 50%{transform:rotate(7deg)} }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+@keyframes tilt { 0%,100%{transform:rotate(0)} 33%{transform:rotate(-3deg)} 66%{transform:rotate(2deg)} }
+.anim-float { animation: float 2.5s ease-in-out infinite; display: inline-block; }
+.anim-bounce { animation: bounce 1.8s ease-in-out infinite; display: inline-block; }
+.anim-sway { animation: sway 2.2s ease-in-out infinite; display: inline-block; }
+.anim-spin { animation: spin 3s ease-in-out infinite; display: inline-block; }
+.anim-pulse { animation: pulse 2s ease-in-out infinite; display: inline-block; }
+.anim-tilt { animation: tilt 2s ease-in-out infinite; display: inline-block; }
+/* 进度条 */
+.progress-bar { height: 8px; border-radius: 4px; background: #F0E8E0; overflow: hidden; margin-top: 3px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-in-out; }
+/* 环形图 */
+#ringArea { display: flex; flex-direction: column; align-items: center; position: relative; padding: 10px 0; }
+#ringCenter { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; margin-top: -8px; }
+#ringCal { font-size: 44px; font-weight: 700; display: block; }
+#ringUnit { font-size: 14px; color: var(--text-light); }
+#ringTip { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+/* 日期 */
+.date-bar { display: flex; align-items: center; justify-content: center; padding: 20px 0 8px; }
+.date-bar button { font-size: 30px; color: var(--caramel); background: none; border: none; padding: 0 20px; cursor: pointer; }
+.date-bar button:disabled { color: #E0D5CC; }
+.date-bar .d-text { font-size: 18px; font-weight: 600; min-width: 140px; text-align: center; }
+/* 搜索 */
+.search-wrap { position: relative; margin: 0 16px 12px; }
+.search-wrap input { width: 100%; background: var(--card); border: none; border-radius: 30px; padding: 12px 36px 12px 44px; font-size: 14px; color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,0.03); outline: none; }
+.search-wrap .s-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+/* 分类 */
+.cat-bar { display: flex; overflow-x: auto; padding: 0 16px 12px; gap: 8px; -webkit-overflow-scrolling: touch; }
+.cat-bar::-webkit-scrollbar { display: none; }
+.cat-tag { display: flex; flex-direction: column; align-items: center; padding: 10px 14px; border-radius: 20px; background: var(--card); font-size: 11px; color: var(--text-light); white-space: nowrap; cursor: pointer; flex-shrink: 0; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.cat-tag.active { background: var(--caramel); color: #fff; }
+.cat-tag .ce { font-size: 22px; margin-bottom: 2px; }
+/* 食物列表 */
+.food-scroll { margin: 0 16px; max-height: 46vh; overflow-y: auto; }
+.food-item { display: flex; align-items: center; background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.food-item .fi-emoji { font-size: 36px; margin-right: 12px; }
+.food-item .fi-info { flex: 1; }
+.food-item .fi-name { font-size: 15px; color: var(--text); display: block; }
+.food-item .fi-nutri { font-size: 11px; color: #C0B0A0; margin-top: 2px; }
+.food-item .fi-arrow { font-size: 22px; color: #D0C0B0; }
+/* 弹窗 */
+.modal-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: none; align-items: flex-end; z-index: 200; }
+.modal-mask.show { display: flex; }
+.modal-card { width: 100%; max-width: 500px; margin: 0 auto; background: var(--bg); border-radius: 30px 30px 0 0; padding: 28px 20px env(safe-area-inset-bottom); max-height: 82vh; overflow-y: auto; }
+.m-header { display: flex; align-items: center; margin-bottom: 20px; }
+.m-emoji { font-size: 42px; margin-right: 12px; }
+.m-name { font-size: 20px; font-weight: 600; flex: 1; }
+.m-kcal { font-size: 14px; color: var(--caramel); }
+.grams-box { display: flex; align-items: center; margin-bottom: 12px; }
+.grams-box input { flex: 1; font-size: 36px; font-weight: 700; color: var(--text); border: none; background: var(--card); border-radius: 16px; padding: 12px 16px; text-align: center; outline: none; }
+.grams-box .g-unit { font-size: 20px; color: var(--text-light); margin-left: 10px; }
+.quick-g { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.qg { padding: 8px 20px; border-radius: 16px; background: var(--card); font-size: 13px; color: var(--text-light); cursor: pointer; border: none; }
+.qg.on { background: var(--caramel); color: #fff; }
+.est { background: var(--warm); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; }
+.est .el { font-size: 12px; opacity: 0.7; display: block; }
+.est .er { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.meal-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.mo { padding: 10px 20px; border-radius: 20px; background: var(--card); font-size: 13px; color: var(--text-light); cursor: pointer; border: none; }
+.mo.on { background: var(--matcha); color: #fff; }
+.btn-row { display: flex; gap: 12px; margin-top: 12px; }
+.btn-row button { flex: 1; }
+/* 首页列表 */
+.meal-block { margin: 0 16px 16px; }
+.meal-h { display: flex; justify-content: space-between; padding: 10px 0; }
+.meal-h .mh-name { font-size: 16px; font-weight: 600; }
+.meal-h .mh-sub { color: var(--caramel); font-size: 14px; }
+.food-entry { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid #F5EDE5; background: var(--card); }
+.food-entry:first-of-type { border-radius: 16px 16px 0 0; }
+.food-entry:last-of-type { border-radius: 0 0 16px 16px; border-bottom: none; }
+.food-entry:only-of-type { border-radius: 16px; border-bottom: none; }
+.fe-emoji { font-size: 32px; margin-right: 12px; }
+.fe-info { flex: 1; }
+.fe-name { font-size: 15px; display: block; }
+.fe-detail { font-size: 11px; color: #C0B0A0; }
+.fe-cal { font-size: 14px; font-weight: 600; color: var(--caramel); margin-right: 8px; }
+.fe-del { width: 32px; height: 32px; line-height: 32px; text-align: center; color: #D0C0B0; cursor: pointer; border-radius: 50%; font-size: 20px; border: none; background: none; }
+.meal-empty-hint { padding: 20px; text-align: center; background: var(--card); border-radius: 16px; color: #D0C0B0; font-size: 13px; }
+.empty-state { text-align: center; padding: 60px 0; }
+.empty-state .es-emoji { font-size: 60px; display: block; margin-bottom: 12px; }
+.empty-state p { color: var(--text-light); }
+/* 历史 */
+.section-title { font-size: 20px; font-weight: 700; padding: 20px 16px 8px; }
+.h-card { margin-bottom: 10px; }
+.h-row { display: flex; align-items: baseline; margin-bottom: 8px; }
+.h-date { font-size: 18px; font-weight: 600; margin-right: 10px; }
+.h-sub { font-size: 12px; color: #C0B0A0; }
+.h-body { display: flex; align-items: center; }
+.h-num { font-size: 36px; font-weight: 700; color: var(--caramel); margin-right: 4px; }
+.h-unit { font-size: 12px; color: #C0B0A0; margin-right: 16px; }
+.h-macros { display: flex; gap: 10px; font-size: 13px; color: var(--text-light); flex: 1; }
+.h-count { font-size: 12px; color: #C0B0A0; }
+.h-none { color: #D0C0B0; font-size: 13px; }
+/* 设置 */
+.form-line { display: flex; align-items: center; margin-bottom: 16px; }
+.form-label { width: 80px; font-size: 14px; color: var(--text-light); flex-shrink: 0; }
+.form-input { width: 70px; text-align: center; font-size: 18px; font-weight: 600; color: var(--text); background: var(--bg); border: none; border-radius: 10px; padding: 8px; outline: none; }
+.form-unit { font-size: 13px; color: #C0B0A0; margin-left: 6px; }
+.toggle-row { display: flex; gap: 8px; }
+.toggle { padding: 8px 20px; border-radius: 18px; background: #F0E8E0; font-size: 13px; color: var(--text-light); cursor: pointer; border: none; }
+.toggle.on { background: var(--caramel); color: #fff; }
+select.picker { font-size: 14px; color: var(--text); background: var(--bg); border: none; padding: 8px 16px; border-radius: 14px; outline: none; }
+.detail-box { background: #F0E8E0; border-radius: 14px; padding: 12px 16px; margin-top: 8px; font-size: 13px; color: #8B7355; display: none; }
+.detail-box span { display: block; margin-bottom: 4px; }
+.vip-area { margin-bottom: 14px; }
+.vip-row { display: flex; align-items: center; margin-bottom: 12px; }
+.vip-icon { font-size: 40px; margin-right: 12px; }
+.vip-title { font-size: 18px; font-weight: 600; display: block; color: var(--text); }
+.vip-desc { font-size: 13px; color: var(--text-light); }
+.vip-code-row { display: flex; gap: 10px; }
+.vip-code-row input { flex: 1; background: var(--card); border: none; border-radius: 16px; padding: 10px 16px; font-size: 14px; outline: none; }
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-head .sh-title { font-size: 18px; font-weight: 600; }
+.section-head .sh-badge { font-size: 11px; background: #DDE8D6; color: var(--matcha); padding: 3px 12px; border-radius: 14px; }
+.cam-fab { position: fixed; bottom: 130px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--caramel); border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(200,149,109,0.35); z-index: 50; display: flex; align-items: center; justify-content: center; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ====== 首页 ====== -->
+<div id="tab-today" class="tab-page">
+  <div class="date-bar">
+    <button id="btnPrev" onclick="changeDay(-1)">‹</button>
+    <span class="d-text" id="lblDate">今天</span>
+    <button id="btnNext" onclick="changeDay(1)">›</button>
+  </div>
+  <div class="card">
+    <div id="ringArea">
+      <canvas id="ringCanvas" width="200" height="200" style="width:200px;height:200px;"></canvas>
+      <div id="ringCenter">
+        <span id="ringCal">0</span>
+        <span id="ringUnit">/ 2000 kcal</span>
+      </div>
+    </div>
+    <div id="ringTip" style="text-align:center"></div>
+  </div>
+  <div class="card" id="macroCard"></div>
+  <div id="mealContainer"></div>
+  <div class="empty-state" id="emptyState">
+    <span class="es-emoji">🍽️</span>
+    <p>今天还没记录饮食</p>
+    <p style="font-size:12px;margin-top:4px;color:#D0C0B0">点下方「记录」开始吧 ~</p>
+  </div>
+</div>
+
+<!-- ====== 记录页 ====== -->
+<div id="tab-add" class="tab-page" style="display:none">
+  <div style="padding-top:16px"></div>
+  <div class="search-wrap">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索食物..." oninput="filterFoods()">
+  </div>
+  <div class="cat-bar" id="catBar"></div>
+  <div class="food-scroll" id="foodList"></div>
+  <button class="cam-fab" onclick="takePhoto()">📷</button>
+</div>
+
+<!-- 食物详情弹窗 -->
+<div class="modal-mask" id="foodModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card" id="modalContent"></div>
+</div>
+
+<!-- ====== 历史页 ====== -->
+<div id="tab-history" class="tab-page" style="display:none">
+  <div class="section-title">过去 7 天</div>
+  <div id="historyList" style="padding:0 16px"></div>
+</div>
+
+<!-- ====== 设置页 ====== -->
+<div id="tab-settings" class="tab-page" style="display:none">
+  <div style="padding-top:12px"></div>
+  <div class="card">
+    <div class="vip-area">
+      <div class="vip-row">
+        <span class="vip-icon" id="vipIcon">🔒</span>
+        <div>
+          <span class="vip-title" id="vipTitle">免费用户</span>
+          <span class="vip-desc" id="vipDesc">开通 VIP 解锁 AI 拍照识别</span>
+        </div>
+      </div>
+      <div class="vip-code-row" id="vipBox">
+        <input type="text" id="vipCodeInput" placeholder="输入激活码">
+        <button class="btn btn-p btn-s" onclick="doActivateVIP()">激活</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-head">
+      <span class="sh-title">👤 身体数据</span>
+    </div>
+    <div id="profileForm"></div>
+    <button class="btn btn-g" onclick="calcRecommend()">🧮 计算推荐目标</button>
+  </div>
+  <div class="card">
+    <div class="section-head">
+      <span class="sh-title">🎯 每日目标</span>
+      <span class="sh-badge" id="targetBadge">科学推荐</span>
+    </div>
+    <div id="targetForm"></div>
+    <div class="detail-box" id="detailBox"></div>
+  </div>
+  <div style="height:40px"></div>
+</div>
+
+<!-- 底栏 -->
+<div id="bottomNav">
+  <button class="nav-item active" data-tab="today"><span class="nav-emoji">📋</span>今日</button>
+  <button class="nav-item" data-tab="add"><span class="nav-emoji">➕</span>记录</button>
+  <button class="nav-item" data-tab="history"><span class="nav-emoji">📅</span>历史</button>
+  <button class="nav-item" data-tab="settings"><span class="nav-emoji">⚙️</span>我</button>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="onPhotoPicked(event)">
+
+<script>
+// ================ 数据定义 ================
+const FOOD_DB = [
+  {n:'白米饭',c:'staple',cal:116,f:0.3,p:2.6,cb:25.9},{n:'馒头',c:'staple',cal:223,f:1.1,p:7.0,cb:44.2},{n:'面条(煮)',c:'staple',cal:110,f:0.2,p:3.4,cb:23.0},{n:'红薯',c:'staple',cal:86,f:0.1,p:1.6,cb:20.1},{n:'玉米',c:'staple',cal:112,f:1.2,p:4.0,cb:22.8},{n:'全麦面包',c:'staple',cal:246,f:3.4,p:10.6,cb:43.1},{n:'燕麦片',c:'staple',cal:377,f:6.7,p:13.5,cb:66.3},{n:'小米粥',c:'staple',cal:46,f:0.7,p:1.4,cb:8.4},{n:'糙米饭',c:'staple',cal:123,f:0.9,p:2.7,cb:25.6},{n:'饺子(猪肉)',c:'staple',cal:240,f:11.0,p:9.0,cb:26.0},{n:'包子(肉馅)',c:'staple',cal:227,f:10.2,p:8.6,cb:24.5},{n:'油条',c:'staple',cal:386,f:17.6,p:6.9,cb:50.1},{n:'吐司面包',c:'staple',cal:278,f:4.5,p:9.0,cb:50.0},
+  {n:'鸡胸肉',c:'meat',cal:133,f:5.0,p:19.4,cb:2.5},{n:'鸡腿肉',c:'meat',cal:181,f:11.0,p:16.0,cb:2.0},{n:'牛肉(瘦)',c:'meat',cal:125,f:4.2,p:20.2,cb:0.2},{n:'猪肉(瘦)',c:'meat',cal:143,f:6.2,p:20.3,cb:1.5},{n:'猪排骨',c:'meat',cal:264,f:20.4,p:18.3,cb:0.7},{n:'羊肉',c:'meat',cal:203,f:14.1,p:19.0,cb:0},{n:'三文鱼',c:'meat',cal:208,f:13.0,p:20.0,cb:0},{n:'虾仁',c:'meat',cal:99,f:0.8,p:20.1,cb:2.0},{n:'鸡翅',c:'meat',cal:194,f:11.8,p:17.4,cb:4.6},{n:'培根',c:'meat',cal:541,f:42.0,p:38.0,cb:1.7},{n:'腊肉',c:'meat',cal:498,f:44.0,p:10.0,cb:6.0},{n:'带鱼',c:'meat',cal:127,f:4.9,p:17.7,cb:0},
+  {n:'鸡蛋(煮)',c:'dairy',cal:155,f:10.6,p:12.6,cb:1.2},{n:'鸡蛋(炒)',c:'dairy',cal:196,f:14.8,p:11.5,cb:2.8},{n:'纯牛奶',c:'dairy',cal:66,f:3.6,p:3.2,cb:4.8},{n:'酸奶(原味)',c:'dairy',cal:72,f:2.7,p:2.5,cb:9.3},{n:'奶酪片',c:'dairy',cal:328,f:25.0,p:22.0,cb:4.0},{n:'豆腐',c:'dairy',cal:76,f:4.8,p:8.1,cb:3.0},{n:'豆浆',c:'dairy',cal:31,f:1.6,p:2.9,cb:1.1},{n:'毛豆',c:'dairy',cal:131,f:5.7,p:13.1,cb:10.5},{n:'鹌鹑蛋',c:'dairy',cal:160,f:11.1,p:12.8,cb:1.4},{n:'脱脂牛奶',c:'dairy',cal:35,f:0.2,p:3.4,cb:4.9},
+  {n:'西兰花',c:'veggie',cal:34,f:0.4,p:2.8,cb:6.6},{n:'番茄',c:'veggie',cal:18,f:0.2,p:0.9,cb:3.5},{n:'黄瓜',c:'veggie',cal:15,f:0.1,p:0.7,cb:2.7},{n:'菠菜',c:'veggie',cal:23,f:0.4,p:2.9,cb:3.6},{n:'胡萝卜',c:'veggie',cal:37,f:0.2,p:0.9,cb:8.0},{n:'生菜',c:'veggie',cal:15,f:0.2,p:1.3,cb:2.0},{n:'土豆',c:'veggie',cal:76,f:0.1,p:2.0,cb:17.2},{n:'香菇',c:'veggie',cal:34,f:0.3,p:2.2,cb:6.3},{n:'白菜',c:'veggie',cal:13,f:0.1,p:1.5,cb:2.2},{n:'芹菜',c:'veggie',cal:14,f:0.1,p:0.7,cb:3.0},{n:'茄子',c:'veggie',cal:25,f:0.2,p:1.0,cb:5.4},{n:'豆芽',c:'veggie',cal:18,f:0.1,p:1.7,cb:2.6},
+  {n:'苹果',c:'fruit',cal:52,f:0.2,p:0.3,cb:13.8},{n:'香蕉',c:'fruit',cal:89,f:0.3,p:1.1,cb:22.8},{n:'橙子',c:'fruit',cal:47,f:0.1,p:0.9,cb:11.8},{n:'葡萄',c:'fruit',cal:69,f:0.2,p:0.7,cb:18.1},{n:'西瓜',c:'fruit',cal:30,f:0.1,p:0.6,cb:6.8},{n:'草莓',c:'fruit',cal:32,f:0.3,p:0.7,cb:7.7},{n:'芒果',c:'fruit',cal:60,f:0.4,p:0.8,cb:15.0},{n:'猕猴桃',c:'fruit',cal:61,f:0.5,p:1.1,cb:14.7},{n:'蓝莓',c:'fruit',cal:57,f:0.3,p:0.7,cb:14.5},{n:'牛油果',c:'fruit',cal:160,f:15.0,p:2.0,cb:9.0},{n:'榴莲',c:'fruit',cal:147,f:5.3,p:2.0,cb:27.0},{n:'荔枝',c:'fruit',cal:66,f:0.4,p:0.8,cb:16.5},
+  {n:'薯片',c:'snack',cal:536,f:35.0,p:5.0,cb:51.0},{n:'辣条',c:'snack',cal:430,f:22.0,p:8.0,cb:50.0},{n:'奥利奥',c:'snack',cal:480,f:21.0,p:5.0,cb:68.0},{n:'牛奶巧克力',c:'snack',cal:546,f:32.0,p:7.0,cb:56.0},{n:'冰淇淋(香草)',c:'snack',cal:207,f:11.0,p:3.5,cb:23.6},{n:'坚果(混合)',c:'snack',cal:607,f:54.0,p:20.0,cb:15.0},{n:'饼干(苏打)',c:'snack',cal:438,f:12.0,p:8.0,cb:73.0},{n:'蛋糕(奶油)',c:'snack',cal:347,f:17.0,p:5.0,cb:43.0},{n:'泡芙',c:'snack',cal:320,f:23.0,p:4.0,cb:25.0},{n:'肉松饼',c:'snack',cal:427,f:20.0,p:9.5,cb:53.0},{n:'沙琪玛',c:'snack',cal:506,f:26.0,p:6.5,cb:61.0},{n:'干脆面',c:'snack',cal:495,f:24.0,p:9.0,cb:60.0},{n:'果冻',c:'snack',cal:70,f:0,p:0.5,cb:17.0},{n:'牛肉干',c:'snack',cal:250,f:4.0,p:45.0,cb:6.0},{n:'卤蛋',c:'snack',cal:160,f:11.0,p:13.0,cb:1.5},
+  {n:'珍珠奶茶(中杯)',c:'drink',cal:360,f:8.0,p:4.0,cb:66.0,ps:true},{n:'杨枝甘露',c:'drink',cal:300,f:12.0,p:3.0,cb:46.0,ps:true},{n:'生椰拿铁',c:'drink',cal:180,f:7.0,p:4.0,cb:25.0,ps:true},{n:'美式咖啡(大)',c:'drink',cal:15,f:0,p:0.5,cb:2.0,ps:true},{n:'拿铁(大)',c:'drink',cal:200,f:9.0,p:8.0,cb:20.0,ps:true},{n:'可口可乐',c:'drink',cal:42,f:0,p:0,cb:10.6},{n:'雪碧',c:'drink',cal:41,f:0,p:0,cb:10.3},{n:'橙汁',c:'drink',cal:45,f:0.1,p:0.6,cb:10.4},{n:'啤酒',c:'drink',cal:43,f:0,p:0.5,cb:3.6},{n:'白酒',c:'drink',cal:298,f:0,p:0,cb:0.5},{n:'柠檬茶',c:'drink',cal:40,f:0,p:0,cb:10.0},{n:'冰美式',c:'drink',cal:10,f:0,p:0.3,cb:1.0,ps:true},{n:'星冰乐',c:'drink',cal:380,f:15.0,p:6.0,cb:54.0,ps:true},{n:'椰子水',c:'drink',cal:19,f:0.2,p:0.4,cb:3.7},{n:'运动饮料',c:'drink',cal:26,f:0,p:0,cb:6.4},{n:'抹茶拿铁',c:'drink',cal:230,f:8.0,p:7.0,cb:32.0,ps:true}
+];
+
+var CATS = {
+  staple: {name:'主食',emoji:'🍚'}, meat: {name:'肉类',emoji:'🥩'},
+  dairy: {name:'蛋奶豆',emoji:'🥚'}, veggie: {name:'蔬菜',emoji:'🥦'},
+  fruit: {name:'水果',emoji:'🍎'}, snack: {name:'零食',emoji:'🍩'},
+  drink: {name:'奶茶饮品',emoji:'🧋'}
+};
+var CAT_EMOJI = {staple:'🍚',meat:'🥩',dairy:'🥚',veggie:'🥦',fruit:'🍎',snack:'🍩',drink:'🧋'};
+var CAT_ANIM = {staple:'anim-float',meat:'anim-bounce',dairy:'anim-sway',veggie:'anim-spin',fruit:'anim-float',snack:'anim-pulse',drink:'anim-tilt'};
+var MEALS = {breakfast:'🌅 早餐',lunch:'☀️ 午餐',dinner:'🌙 晚餐',snack:'🍪 加餐'};
+var AL = [{v:1.2,l:'几乎不运动'},{v:1.375,l:'每周 1-3 次'},{v:1.55,l:'每周 3-5 次'},{v:1.725,l:'每周 6-7 次'},{v:1.9,l:'运动员级别'}];
+
+var API = 'http://localhost:3000';
+var activeCat = 'all', selFood = null, selMeal = 'lunch', selGrams = 100, curDate = '';
+
+// ================ 工具函数 ================
+function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate()); }
+function P(n){ return String(n).padStart(2,'0'); }
+function LS(k){ try { return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+function SS(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+function getRecs(dk){ var all=LS('ft_records')||{}; return all[dk||curDate||todayKey()]||[]; }
+function saveRecs(dk,recs){ var all=LS('ft_records')||{}; all[dk||curDate||todayKey()]=recs; SS('ft_records',all); }
+function doIntake(food,g){ var r=f.ps?1:g/100; return {cal:Math.round(food.cal*r),fat:+(food.f*r).toFixed(1),protein:+(food.p*r).toFixed(1),carb:+(food.cb*r).toFixed(1)}; }
+function sumRecs(recs){ var c=0,f=0,p=0,cb=0; recs.forEach(function(r){ c+=r.intake.cal; f+=r.intake.fat; p+=r.intake.protein; cb+=r.intake.carb; }); return {cal:Math.round(c),fat:+f.toFixed(1),protein:+p.toFixed(1),carb:+cb.toFixed(1)}; }
+function getProfile(){ return LS('ft_profile')||{gender:'male',age:22,weightKg:65,heightCm:170,activityLevel:1.55,goal:'maintain'}; }
+function getTargets(){ return LS('ft_targets'); }
+function isVIP(){ return !!LS('ft_vip_code'); }
+function autoTargets(profile){
+  var p=profile||getProfile();
+  var bmr=p.gender==='male'?(10*p.weightKg+6.25*p.heightCm-5*p.age+5):(10*p.weightKg+6.25*p.heightCm-5*p.age-161);
+  var tdee=Math.round(bmr*p.activityLevel);
+  var tc=tdee; if(p.goal==='cut')tc=tdee-500; if(p.goal==='bulk')tc=tdee+400;
+  var min=p.gender==='male'?1500:1200; tc=Math.max(min,Math.round(tc));
+  var pro=Math.round(p.weightKg*(p.goal==='cut'?2.0:1.8));
+  var fat=Math.round(tc*0.25/9);
+  var carb=Math.max(0,Math.round((tc-pro*4-fat*9)/4));
+  return {targetCal:tc,protein:pro,fat:fat,carb:carb,isManual:false,bmr:Math.round(bmr),tdee:tdee};
+}
+
+// ================ Tab 切换 ================
+function switchTab(name){
+  document.querySelectorAll('.tab-page').forEach(function(d){ d.style.display='none'; });
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelectorAll('#bottomNav .nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.querySelector('#bottomNav [data-tab="'+name+'"]').classList.add('active');
+  if(name==='today') renderToday();
+  if(name==='add') renderAdd();
+  if(name==='history') renderHistory();
+  if(name==='settings') renderSettings();
+}
+document.getElementById('bottomNav').addEventListener('click',function(e){
+  var btn=e.target.closest('.nav-item'); if(btn) switchTab(btn.dataset.tab);
+});
+
+// ================ 首页 ================
+function renderToday(){
+  curDate = curDate || todayKey();
+  var recs = getRecs(curDate);
+  var sum = sumRecs(recs);
+  var t = getTargets() || autoTargets();
+  var calPct = t.targetCal ? Math.min(100,(sum.cal/t.targetCal)*100) : 0;
+
+  document.getElementById('lblDate').textContent = curDate===todayKey()?'今天':curDate;
+  document.getElementById('btnNext').disabled = curDate===todayKey();
+
+  var tip='还可以继续吃哦 ~';
+  if(calPct>=110) tip='热量超标啦';
+  else if(calPct>=100) tip='今日热量已达标';
+  else if(calPct>=80) tip='快接近目标了，控制一下 ~';
+  document.getElementById('ringCal').textContent = sum.cal;
+  document.getElementById('ringUnit').textContent = '/ '+t.targetCal+' kcal';
+  document.getElementById('ringTip').textContent = tip;
+  drawRing(calPct);
+
+  // 营养素
+  function pct(v,tg){ return tg?Math.min(100,(v/tg)*100):0; }
+  var mc = document.getElementById('macroCard');
+  mc.innerHTML = '';
+  [
+    {emoji:'🥩',name:'蛋白质',val:sum.protein,target:t.protein,color:'#C8956D'},
+    {emoji:'🧈',name:'脂肪',val:sum.fat,target:t.fat,color:'#F0C9A0'},
+    {emoji:'🍞',name:'碳水',val:sum.carb,target:t.carb,color:'#B8C9A8'}
+  ].forEach(function(item){
+    mc.innerHTML += '<div style="margin-bottom:14px"><span style="font-size:16px">'+item.emoji+'</span> <b>'+item.val+'g</b> '+item.name+' <span style="float:right;color:var(--text-light);font-size:12px">目标 '+item.target+'g</span><div class="progress-bar"><div class="progress-fill" style="width:'+pct(item.val,item.target)+'%;background:'+item.color+'"></div></div></div>';
+  });
+  mc.innerHTML = mc.innerHTML.replace(/<div style="margin-bottom:14px">$/, '');
+
+  // 餐次
+  var mo=['breakfast','lunch','dinner','snack'];
+  var ml='';
+  mo.forEach(function(m){
+    var mRecs=recs.filter(function(r){ return r.meal===m; });
+    var mSum=sumRecs(mRecs);
+    ml+='<div class="meal-block"><div class="meal-h"><span class="mh-name">'+MEALS[m]+'</span><span class="mh-sub">'+mSum.cal+' kcal</span></div>';
+    if(mRecs.length){
+      mRecs.forEach(function(r){
+        ml+='<div class="food-entry"><span class="fe-emoji '+CAT_ANIM[r.foodCat]+'">'+CAT_EMOJI[r.foodCat]+'</span><div class="fe-info"><span class="fe-name">'+r.foodName+'</span><span class="fe-detail">'+r.grams+'g · '+r.time+'</span></div><span class="fe-cal">'+r.intake.cal+' kcal</span><button class="fe-del" onclick="delFood('+r.id+')">&times;</button></div>';
+      });
+    } else {
+      ml+='<div class="meal-empty-hint">还没有记录 ~</div>';
+    }
+    ml+='</div>';
+  });
+  document.getElementById('mealContainer').innerHTML = ml;
+  document.getElementById('emptyState').style.display = recs.length?'none':'block';
+}
+
+function drawRing(pct){
+  try {
+    var c=document.getElementById('ringCanvas');
+    var ctx=c.getContext('2d');
+    var cx=100,cy=100,r=80,lw=18;
+    ctx.clearRect(0,0,200,200);
+    // 背景圆环
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle='#F0E8E0'; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.stroke();
+    // 进度
+    var color=pct>=110?'#F0A8A8':pct>=100?'#F0C9A0':'#B8C9A8';
+    var angle=Math.min(1,pct/100)*Math.PI*2 - Math.PI/2;
+    ctx.beginPath(); ctx.arc(cx,cy,r,-Math.PI/2,angle);
+    ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.lineCap='round'; ctx.stroke();
+  } catch(e) { console.error('drawRing error:',e); }
+}
+
+function changeDay(dir){
+  if(dir>0 && curDate===todayKey()) return;
+  var d=new Date(curDate); d.setDate(d.getDate()+dir);
+  curDate=d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate());
+  renderToday();
+}
+
+function delFood(id){
+  if(!confirm('删除这条记录？')) return;
+  var recs=getRecs(curDate).filter(function(r){ return r.id!==id; });
+  saveRecs(curDate,recs); renderToday();
+}
+
+// ================ 记录页 ================
+function getFilteredFoods(){
+  var kw=(document.getElementById('searchInput')||{}).value||'';
+  var list=FOOD_DB;
+  if(kw){ list=FOOD_DB.filter(function(f){ return f.n.indexOf(kw)>=0; }); }
+  if(activeCat!=='all'){ list=list.filter(function(f){ return f.c===activeCat; }); }
+  return list;
+}
+
+function renderAdd(){
+  var foods=getFilteredFoods();
+
+  // 分类
+  var ct='<button class="cat-tag'+(activeCat==='all'?' active':'')+'" onclick="activeCat=\'all\';renderAdd();"><span class="ce">🍽️</span>全部</button>';
+  Object.keys(CATS).forEach(function(k){
+    var v=CATS[k];
+    ct+='<button class="cat-tag'+(activeCat===k?' active':'')+'" onclick="activeCat=\''+k+'\';renderAdd();"><span class="ce '+CAT_ANIM[k]+'">'+v.emoji+'</span>'+v.name+'</button>';
+  });
+  document.getElementById('catBar').innerHTML = ct;
+
+  // 食物
+  var fl='';
+  foods.forEach(function(f,i){
+    fl+='<div class="food-item" onclick="openFood('+i+')"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+CAT_EMOJI[f.c]+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
+  });
+  document.getElementById('foodList').innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
+}
+
+function filterFoods(){ activeCat='all'; renderAdd(); }
+
+function openFood(i){
+  var foods=getFilteredFoods();
+  selFood=foods[i];
+  selGrams=selFood.ps?1:100;
+  selMeal='lunch';
+
+  var intake=doIntake(selFood,selGrams);
+  var h='';
+  h+='<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+CAT_EMOJI[selFood.c]+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
+  h+='<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" oninput="onGramsChange()" placeholder="克数"><span class="g-unit">g</span></div>';
+  h+='<div class="quick-g">';
+  [50,100,150,200,300,500].forEach(function(g){
+    h+='<button class="qg'+(selGrams===g?' on':'')+'" onclick="setGrams('+g+')">'+g+'g</button>';
+  });
+  h+='</div>';
+  if(selGrams>0){
+    h+='<div class="est"><span class="el">预估摄入</span><div class="er"><span>🔥 '+intake.cal+' kcal</span><span>🥩 '+intake.protein+'g 蛋白</span><span>🧈 '+intake.fat+'g 脂肪</span><span>🍞 '+intake.carb+'g 碳水</span></div></div>';
+  }
+  h+='<div class="meal-row">';
+  Object.keys(MEALS).forEach(function(m){
+    h+='<button class="mo'+(selMeal===m?' on':'')+'" onclick="selMeal=\''+m+'\';openFood('+i+')">'+MEALS[m]+'</button>';
+  });
+  h+='</div>';
+  h+='<div class="btn-row"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="confirmAdd()" '+(selGrams<=0?'disabled':'')+'>确认添加</button></div>';
+
+  document.getElementById('modalContent').innerHTML = h;
+  document.getElementById('foodModal').classList.add('show');
+}
+
+function onGramsChange(){
+  selGrams = parseInt(document.getElementById('gramsInput').value) || 0;
+  refreshModal();
+}
+
+function setGrams(g){
+  selGrams = g;
+  document.getElementById('gramsInput').value = g;
+  document.querySelectorAll('.qg').forEach(function(q){ q.classList.toggle('on',parseInt(q.textContent)===g); });
+  refreshModal();
+}
+
+function refreshModal(){
+  var intake = doIntake(selFood,selGrams);
+  var est = document.querySelector('.est');
+  if(est && selGrams>0){
+    est.innerHTML = '<span class="el">预估摄入</span><div class="er"><span>🔥 '+intake.cal+' kcal</span><span>🥩 '+intake.protein+'g 蛋白</span><span>🧈 '+intake.fat+'g 脂肪</span><span>🍞 '+intake.carb+'g 碳水</span></div>';
+  }
+  var confirmBtn = document.querySelector('.btn-p');
+  if(confirmBtn) confirmBtn.disabled = selGrams <= 0;
+}
+
+function closeModal(){
+  document.getElementById('foodModal').classList.remove('show');
+  selFood = null;
+}
+
+function confirmAdd(){
+  if(!selFood||selGrams<=0) return;
+  var recs=getRecs();
+  recs.push({
+    id:Date.now(), foodName:selFood.n, foodCat:selFood.c,
+    grams:selGrams, meal:selMeal, intake:doIntake(selFood,selGrams),
+    time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})
+  });
+  saveRecs(todayKey(),recs);
+  closeModal();
+  renderAdd();
+  setTimeout(function(){ alert('已记录 ✅'); },100);
+}
+
+// ================ AI 拍照 ================
+function takePhoto(){
+  if(!isVIP()){
+    alert('AI 拍照识别需要 VIP 激活码~\n去「我」页面开通吧');
+    switchTab('settings');
+    return;
+  }
+  document.getElementById('photoInput').click();
+}
+
+function onPhotoPicked(e){
+  var file=e.target.files[0]; if(!file) return;
+  var fd=new FormData(); fd.append('image',file); fd.append('code',LS('ft_vip_code')||'');
+  document.getElementById('foodModal').classList.add('show');
+  document.getElementById('modalContent').innerHTML='<div style="text-align:center;padding:50px"><div style="font-size:48px">🔍</div><p style="margin-top:12px;color:var(--text-light)">正在识别食物...</p></div>';
+
+  fetch(API+'/api/vision/recognize',{method:'POST',body:fd})
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(!data.ok){ alert(data.msg||'识别失败'); closeModal(); return; }
+    if(!data.foods.length){ alert('未识别到食物，请换张图试试'); closeModal(); return; }
+    var added=0;
+    var recs=getRecs();
+    data.foods.forEach(function(f){
+      var found=FOOD_DB.find(function(fd){ return fd.n.indexOf(f.name)>=0||f.name.indexOf(fd.n)>=0; });
+      if(found&&f.weight>0){
+        recs.push({id:Date.now()+Math.random(),foodName:found.n,foodCat:found.c,grams:f.weight,meal:'lunch',intake:doIntake(found,f.weight),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});
+        added++;
+      }
+    });
+    saveRecs(todayKey(),recs);
+    closeModal();
+    alert(added>0?'已添加 '+added+' 项 ✅':'未能匹配到数据库中的食物');
+  }).catch(function(){ closeModal(); alert('网络错误，请检查后端服务'); });
+
+  e.target.value='';
+}
+
+// ================ 历史 ================
+function renderHistory(){
+  var all=LS('ft_records')||{};
+  var h='';
+  for(var i=6;i>=0;i--){
+    var d=new Date(); d.setDate(d.getDate()-i);
+    var key=d.getFullYear()+'-'+P(d.getMonth()+1)+'-'+P(d.getDate());
+    var recs=all[key]||[];
+    var s=sumRecs(recs);
+    h+='<div class="card h-card"><div class="h-row"><span class="h-date">'+(i===0?'今天':(d.getMonth()+1)+'/'+d.getDate())+'</span><span class="h-sub">'+key+'</span></div>';
+    if(recs.length){
+      h+='<div class="h-body"><span class="h-num">'+s.cal+'</span><span class="h-unit">kcal</span><div class="h-macros"><span>🥩 '+s.protein+'g</span><span>🧈 '+s.fat+'g</span><span>🍞 '+s.carb+'g</span></div><span class="h-count">'+recs.length+' 项</span></div>';
+    } else {
+      h+='<span class="h-none">当天无记录</span>';
+    }
+    h+='</div>';
+  }
+  document.getElementById('historyList').innerHTML = h;
+}
+
+// ================ 设置 ================
+function renderSettings(){
+  var p=getProfile();
+  var t=getTargets()||autoTargets(p);
+
+  document.getElementById('vipIcon').textContent = isVIP()?'👑':'🔒';
+  document.getElementById('vipTitle').textContent = isVIP()?'VIP 已激活':'免费用户';
+  document.getElementById('vipDesc').textContent = isVIP()?'AI 拍照识别已解锁':'开通 VIP 解锁 AI 拍照识别';
+  document.getElementById('vipBox').style.display = isVIP()?'none':'flex';
+  document.getElementById('targetBadge').textContent = (t&&t.isManual)?'已手动修改':'科学推荐';
+
+  // 身体数据
+  var pf='';
+  pf+='<div class="form-line"><span class="form-label">性别</span><div class="toggle-row"><button class="toggle'+(p.gender==='male'?' on':'')+'" onclick="setP(\'gender\',\'male\')">♂ 男</button><button class="toggle'+(p.gender==='female'?' on':'')+'" onclick="setP(\'gender\',\'female\')">♀ 女</button></div></div>';
+  pf+='<div class="form-line"><span class="form-label">年龄</span><input class="form-input" type="number" value="'+p.age+'" onchange="setP(\'age\',parseInt(this.value)||22)"><span class="form-unit">岁</span></div>';
+  pf+='<div class="form-line"><span class="form-label">身高</span><input class="form-input" type="number" value="'+p.heightCm+'" onchange="setP(\'heightCm\',parseInt(this.value)||170)"><span class="form-unit">cm</span></div>';
+  pf+='<div class="form-line"><span class="form-label">体重</span><input class="form-input" type="number" value="'+p.weightKg+'" onchange="setP(\'weightKg\',parseInt(this.value)||65)"><span class="form-unit">kg</span></div>';
+  pf+='<div class="form-line"><span class="form-label">运动量</span><select class="picker" onchange="setP(\'activityLevel\',parseFloat(this.value))">';
+  AL.forEach(function(a){ pf+='<option value="'+a.v+'"'+(p.activityLevel===a.v?' selected':'')+'>'+a.l+'</option>'; });
+  pf+='</select></div>';
+  pf+='<div class="form-line"><span class="form-label">目标</span><div class="toggle-row"><button class="toggle'+(p.goal==='cut'?' on':'')+'" onclick="setP(\'goal\',\'cut\')">减脂</button><button class="toggle'+(p.goal==='maintain'?' on':'')+'" onclick="setP(\'goal\',\'maintain\')">维持</button><button class="toggle'+(p.goal==='bulk'?' on':'')+'" onclick="setP(\'goal\',\'bulk\')">增肌</button></div></div>';
+  document.getElementById('profileForm').innerHTML = pf;
+
+  // 目标
+  var tf='';
+  tf+='<div class="form-line"><span class="form-label">热量</span><input class="form-input" type="number" value="'+t.targetCal+'" onchange="setT(\'targetCal\',parseInt(this.value)||2000)"><span class="form-unit">kcal</span></div>';
+  tf+='<div class="form-line"><span class="form-label">蛋白质</span><input class="form-input" type="number" value="'+t.protein+'" onchange="setT(\'protein\',parseInt(this.value)||100)"><span class="form-unit">g</span></div>';
+  tf+='<div class="form-line"><span class="form-label">脂肪</span><input class="form-input" type="number" value="'+t.fat+'" onchange="setT(\'fat\',parseInt(this.value)||60)"><span class="form-unit">g</span></div>';
+  tf+='<div class="form-line"><span class="form-label">碳水</span><input class="form-input" type="number" value="'+t.carb+'" onchange="setT(\'carb\',parseInt(this.value)||250)"><span class="form-unit">g</span></div>';
+  document.getElementById('targetForm').innerHTML = tf;
+}
+
+function setP(k,v){
+  var p=getProfile(); p[k]=v; SS('ft_profile',p); renderSettings();
+}
+
+function setT(k,v){
+  var t=getTargets()||autoTargets(); t[k]=v; t.isManual=true; SS('ft_targets',t);
+  renderSettings(); renderToday();
+}
+
+function calcRecommend(){
+  var p=getProfile();
+  var r=autoTargets(p);
+  SS('ft_targets',r);
+  document.getElementById('detailBox').style.display='block';
+  document.getElementById('detailBox').innerHTML='<span>BMR: '+r.bmr+' kcal</span><span>TDEE: '+r.tdee+' kcal</span><span>推荐热量: '+r.targetCal+' kcal</span><span>蛋白质: '+r.protein+'g · 脂肪: '+r.fat+'g · 碳水: '+r.carb+'g</span>';
+  document.getElementById('targetBadge').textContent='科学推荐';
+  renderSettings(); renderToday();
+}
+
+async function doActivateVIP(){
+  var code=prompt('输入 VIP 激活码:').trim();
+  if(!code) return;
+  try {
+    var r=await fetch(API+'/api/vip/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})});
+    var d=await r.json();
+    if(d.ok){ SS('ft_vip_code',code); alert('VIP 激活成功！👑'); renderSettings(); }
+    else alert(d.msg);
+  } catch(e) { alert('网络错误，请检查后端服务'); }
+}
+
+// ================ 初始化 ================
+curDate = todayKey();
+renderToday();
+setTimeout(function(){ drawRing(0); }, 400);
+</script>
+</body>
+</html>

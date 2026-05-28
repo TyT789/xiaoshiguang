@@ -1,0 +1,16 @@
+{
+  "name": "小食光 - 健身饮食追踪",
+  "short_name": "小食光",
+  "description": "拍照识别食物，轻松记录每日热量摄入",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFF8F0",
+  "theme_color": "#FFF8F0",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>",
+      "sizes": "100x100",
+      "type": "image/svg+xml"
+    }
+  ]
+}
