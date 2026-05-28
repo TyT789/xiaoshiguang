@@ -103,7 +103,7 @@ body {
 .cat-tag.active { background: var(--caramel); color: #fff; }
 .cat-tag .ce { font-size: 22px; margin-bottom: 2px; }
 /* 食物列表 */
-.food-scroll { margin: 0 16px; max-height: 46vh; overflow-y: auto; }
+.food-scroll { margin: 0 16px; max-height: 46vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .food-item { display: flex; align-items: center; background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
 .food-item .fi-emoji { font-size: 36px; margin-right: 12px; }
 .food-item .fi-info { flex: 1; }
@@ -223,7 +223,7 @@ select.picker { font-size: 14px; color: var(--text); background: var(--bg); bord
     <input type="text" id="searchInput" placeholder="搜索食物..." oninput="filterFoods()">
   </div>
   <div class="cat-bar" id="catBar"></div>
-  <div class="food-scroll" id="foodList"></div>
+  <div class="food-scroll" id="foodList" onclick="handleFoodClick(event)"></div>
   <button class="cam-fab" onclick="takePhoto()">📷</button>
 </div>
 
@@ -467,6 +467,20 @@ function renderAdd(){
 }
 
 function filterFoods(){ activeCat='all'; renderAdd(); }
+
+// 食物点击处理 — 容器级 onclick，最兼容方式
+function handleFoodClick(e){
+  e = e || window.event;
+  var t = e.target || e.srcElement;
+  // 从点击位置向上遍历，找到 .food-item
+  while(t && t !== this){
+    if(t.className && (' '+t.className+' ').indexOf(' food-item ')>-1){
+      var idx = parseInt(t.getAttribute('data-fi'));
+      if(!isNaN(idx)){ openFood(idx); return; }
+    }
+    t = t.parentNode;
+  }
+}
 
 function openFood(i){
   selFood = currentFoods[i];
