@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>测试</title>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+.item { padding: 16px; margin: 8px 0; background: #FFF8F0; border-radius: 16px; cursor: pointer; display: flex; align-items: center; }
+.emoji { font-size: 32px; margin-right: 12px; }
+#msg { padding: 20px; background: #B8C9A8; border-radius: 12px; margin-top: 20px; display: none; }
+</style>
+</head>
+<body>
+<h2>点击测试</h2>
+<div id="list">
+  <div class="item" data-idx="0" onclick="clickFood(0)"><span class="emoji">🍚</span>白米饭 — 116 kcal</div>
+  <div class="item" data-idx="1" onclick="clickFood(1)"><span class="emoji">🍗</span>鸡胸肉 — 133 kcal</div>
+  <div class="item" data-idx="2" onclick="clickFood(2)"><span class="emoji">🥦</span>西兰花 — 34 kcal</div>
+  <div class="item" data-idx="3" onclick="clickFood(3)"><span class="emoji">🧋</span>珍珠奶茶 — 360 kcal</div>
+</div>
+<div id="msg"></div>
+<p id="counter" style="color:#888">点击次数: 0</p>
+<script>
+var count = 0;
+function clickFood(i) {
+  count++;
+  document.getElementById('counter').textContent = '点击次数: ' + count;
+  var foods = ['白米饭','鸡胸肉','西兰花','珍珠奶茶'];
+  var msg = document.getElementById('msg');
+  msg.style.display = 'block';
+  msg.innerHTML = '✅ 你点击了: <b>' + foods[i] + '</b> (第' + count + '次点击)';
+}
+</script>
+</body>
+</html>
