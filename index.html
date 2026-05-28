@@ -287,13 +287,13 @@ select.picker { font-size: 14px; color: var(--text); background: var(--bg); bord
 <script>
 // ================ 数据定义 ================
 const FOOD_DB = [
-  {n:'白米饭',c:'staple',cal:116,f:0.3,p:2.6,cb:25.9},{n:'馒头',c:'staple',cal:223,f:1.1,p:7.0,cb:44.2},{n:'面条(煮)',c:'staple',cal:110,f:0.2,p:3.4,cb:23.0},{n:'红薯',c:'staple',cal:86,f:0.1,p:1.6,cb:20.1},{n:'玉米',c:'staple',cal:112,f:1.2,p:4.0,cb:22.8},{n:'全麦面包',c:'staple',cal:246,f:3.4,p:10.6,cb:43.1},{n:'燕麦片',c:'staple',cal:377,f:6.7,p:13.5,cb:66.3},{n:'小米粥',c:'staple',cal:46,f:0.7,p:1.4,cb:8.4},{n:'糙米饭',c:'staple',cal:123,f:0.9,p:2.7,cb:25.6},{n:'饺子(猪肉)',c:'staple',cal:240,f:11.0,p:9.0,cb:26.0},{n:'包子(肉馅)',c:'staple',cal:227,f:10.2,p:8.6,cb:24.5},{n:'油条',c:'staple',cal:386,f:17.6,p:6.9,cb:50.1},{n:'吐司面包',c:'staple',cal:278,f:4.5,p:9.0,cb:50.0},
-  {n:'鸡胸肉',c:'meat',cal:133,f:5.0,p:19.4,cb:2.5},{n:'鸡腿肉',c:'meat',cal:181,f:11.0,p:16.0,cb:2.0},{n:'牛肉(瘦)',c:'meat',cal:125,f:4.2,p:20.2,cb:0.2},{n:'猪肉(瘦)',c:'meat',cal:143,f:6.2,p:20.3,cb:1.5},{n:'猪排骨',c:'meat',cal:264,f:20.4,p:18.3,cb:0.7},{n:'羊肉',c:'meat',cal:203,f:14.1,p:19.0,cb:0},{n:'三文鱼',c:'meat',cal:208,f:13.0,p:20.0,cb:0},{n:'虾仁',c:'meat',cal:99,f:0.8,p:20.1,cb:2.0},{n:'鸡翅',c:'meat',cal:194,f:11.8,p:17.4,cb:4.6},{n:'培根',c:'meat',cal:541,f:42.0,p:38.0,cb:1.7},{n:'腊肉',c:'meat',cal:498,f:44.0,p:10.0,cb:6.0},{n:'带鱼',c:'meat',cal:127,f:4.9,p:17.7,cb:0},
-  {n:'鸡蛋(煮)',c:'dairy',cal:155,f:10.6,p:12.6,cb:1.2},{n:'鸡蛋(炒)',c:'dairy',cal:196,f:14.8,p:11.5,cb:2.8},{n:'纯牛奶',c:'dairy',cal:66,f:3.6,p:3.2,cb:4.8},{n:'酸奶(原味)',c:'dairy',cal:72,f:2.7,p:2.5,cb:9.3},{n:'奶酪片',c:'dairy',cal:328,f:25.0,p:22.0,cb:4.0},{n:'豆腐',c:'dairy',cal:76,f:4.8,p:8.1,cb:3.0},{n:'豆浆',c:'dairy',cal:31,f:1.6,p:2.9,cb:1.1},{n:'毛豆',c:'dairy',cal:131,f:5.7,p:13.1,cb:10.5},{n:'鹌鹑蛋',c:'dairy',cal:160,f:11.1,p:12.8,cb:1.4},{n:'脱脂牛奶',c:'dairy',cal:35,f:0.2,p:3.4,cb:4.9},
-  {n:'西兰花',c:'veggie',cal:34,f:0.4,p:2.8,cb:6.6},{n:'番茄',c:'veggie',cal:18,f:0.2,p:0.9,cb:3.5},{n:'黄瓜',c:'veggie',cal:15,f:0.1,p:0.7,cb:2.7},{n:'菠菜',c:'veggie',cal:23,f:0.4,p:2.9,cb:3.6},{n:'胡萝卜',c:'veggie',cal:37,f:0.2,p:0.9,cb:8.0},{n:'生菜',c:'veggie',cal:15,f:0.2,p:1.3,cb:2.0},{n:'土豆',c:'veggie',cal:76,f:0.1,p:2.0,cb:17.2},{n:'香菇',c:'veggie',cal:34,f:0.3,p:2.2,cb:6.3},{n:'白菜',c:'veggie',cal:13,f:0.1,p:1.5,cb:2.2},{n:'芹菜',c:'veggie',cal:14,f:0.1,p:0.7,cb:3.0},{n:'茄子',c:'veggie',cal:25,f:0.2,p:1.0,cb:5.4},{n:'豆芽',c:'veggie',cal:18,f:0.1,p:1.7,cb:2.6},
-  {n:'苹果',c:'fruit',cal:52,f:0.2,p:0.3,cb:13.8},{n:'香蕉',c:'fruit',cal:89,f:0.3,p:1.1,cb:22.8},{n:'橙子',c:'fruit',cal:47,f:0.1,p:0.9,cb:11.8},{n:'葡萄',c:'fruit',cal:69,f:0.2,p:0.7,cb:18.1},{n:'西瓜',c:'fruit',cal:30,f:0.1,p:0.6,cb:6.8},{n:'草莓',c:'fruit',cal:32,f:0.3,p:0.7,cb:7.7},{n:'芒果',c:'fruit',cal:60,f:0.4,p:0.8,cb:15.0},{n:'猕猴桃',c:'fruit',cal:61,f:0.5,p:1.1,cb:14.7},{n:'蓝莓',c:'fruit',cal:57,f:0.3,p:0.7,cb:14.5},{n:'牛油果',c:'fruit',cal:160,f:15.0,p:2.0,cb:9.0},{n:'榴莲',c:'fruit',cal:147,f:5.3,p:2.0,cb:27.0},{n:'荔枝',c:'fruit',cal:66,f:0.4,p:0.8,cb:16.5},
-  {n:'薯片',c:'snack',cal:536,f:35.0,p:5.0,cb:51.0},{n:'辣条',c:'snack',cal:430,f:22.0,p:8.0,cb:50.0},{n:'奥利奥',c:'snack',cal:480,f:21.0,p:5.0,cb:68.0},{n:'牛奶巧克力',c:'snack',cal:546,f:32.0,p:7.0,cb:56.0},{n:'冰淇淋(香草)',c:'snack',cal:207,f:11.0,p:3.5,cb:23.6},{n:'坚果(混合)',c:'snack',cal:607,f:54.0,p:20.0,cb:15.0},{n:'饼干(苏打)',c:'snack',cal:438,f:12.0,p:8.0,cb:73.0},{n:'蛋糕(奶油)',c:'snack',cal:347,f:17.0,p:5.0,cb:43.0},{n:'泡芙',c:'snack',cal:320,f:23.0,p:4.0,cb:25.0},{n:'肉松饼',c:'snack',cal:427,f:20.0,p:9.5,cb:53.0},{n:'沙琪玛',c:'snack',cal:506,f:26.0,p:6.5,cb:61.0},{n:'干脆面',c:'snack',cal:495,f:24.0,p:9.0,cb:60.0},{n:'果冻',c:'snack',cal:70,f:0,p:0.5,cb:17.0},{n:'牛肉干',c:'snack',cal:250,f:4.0,p:45.0,cb:6.0},{n:'卤蛋',c:'snack',cal:160,f:11.0,p:13.0,cb:1.5},
-  {n:'珍珠奶茶(中杯)',c:'drink',cal:360,f:8.0,p:4.0,cb:66.0,ps:true},{n:'杨枝甘露',c:'drink',cal:300,f:12.0,p:3.0,cb:46.0,ps:true},{n:'生椰拿铁',c:'drink',cal:180,f:7.0,p:4.0,cb:25.0,ps:true},{n:'美式咖啡(大)',c:'drink',cal:15,f:0,p:0.5,cb:2.0,ps:true},{n:'拿铁(大)',c:'drink',cal:200,f:9.0,p:8.0,cb:20.0,ps:true},{n:'可口可乐',c:'drink',cal:42,f:0,p:0,cb:10.6},{n:'雪碧',c:'drink',cal:41,f:0,p:0,cb:10.3},{n:'橙汁',c:'drink',cal:45,f:0.1,p:0.6,cb:10.4},{n:'啤酒',c:'drink',cal:43,f:0,p:0.5,cb:3.6},{n:'白酒',c:'drink',cal:298,f:0,p:0,cb:0.5},{n:'柠檬茶',c:'drink',cal:40,f:0,p:0,cb:10.0},{n:'冰美式',c:'drink',cal:10,f:0,p:0.3,cb:1.0,ps:true},{n:'星冰乐',c:'drink',cal:380,f:15.0,p:6.0,cb:54.0,ps:true},{n:'椰子水',c:'drink',cal:19,f:0.2,p:0.4,cb:3.7},{n:'运动饮料',c:'drink',cal:26,f:0,p:0,cb:6.4},{n:'抹茶拿铁',c:'drink',cal:230,f:8.0,p:7.0,cb:32.0,ps:true}
+  {n:'白米饭',e:'🍚',c:'staple',cal:116,f:0.3,p:2.6,cb:25.9},{n:'馒头',e:'🥟',c:'staple',cal:223,f:1.1,p:7.0,cb:44.2},{n:'面条(煮)',e:'🍜',c:'staple',cal:110,f:0.2,p:3.4,cb:23.0},{n:'红薯',e:'🍠',c:'staple',cal:86,f:0.1,p:1.6,cb:20.1},{n:'玉米',e:'🌽',c:'staple',cal:112,f:1.2,p:4.0,cb:22.8},{n:'全麦面包',e:'🍞',c:'staple',cal:246,f:3.4,p:10.6,cb:43.1},{n:'燕麦片',e:'🥣',c:'staple',cal:377,f:6.7,p:13.5,cb:66.3},{n:'小米粥',e:'🥣',c:'staple',cal:46,f:0.7,p:1.4,cb:8.4},{n:'糙米饭',e:'🍚',c:'staple',cal:123,f:0.9,p:2.7,cb:25.6},{n:'饺子(猪肉)',e:'🥟',c:'staple',cal:240,f:11.0,p:9.0,cb:26.0},{n:'包子(肉馅)',e:'🥟',c:'staple',cal:227,f:10.2,p:8.6,cb:24.5},{n:'油条',e:'🥖',c:'staple',cal:386,f:17.6,p:6.9,cb:50.1},{n:'吐司面包',e:'🍞',c:'staple',cal:278,f:4.5,p:9.0,cb:50.0},
+  {n:'鸡胸肉',e:'🍗',c:'meat',cal:133,f:5.0,p:19.4,cb:2.5},{n:'鸡腿肉',e:'🍗',c:'meat',cal:181,f:11.0,p:16.0,cb:2.0},{n:'牛肉(瘦)',e:'🥩',c:'meat',cal:125,f:4.2,p:20.2,cb:0.2},{n:'猪肉(瘦)',e:'🥩',c:'meat',cal:143,f:6.2,p:20.3,cb:1.5},{n:'猪排骨',e:'🍖',c:'meat',cal:264,f:20.4,p:18.3,cb:0.7},{n:'羊肉',e:'🥩',c:'meat',cal:203,f:14.1,p:19.0,cb:0},{n:'三文鱼',e:'🐟',c:'meat',cal:208,f:13.0,p:20.0,cb:0},{n:'虾仁',e:'🦐',c:'meat',cal:99,f:0.8,p:20.1,cb:2.0},{n:'鸡翅',e:'🍗',c:'meat',cal:194,f:11.8,p:17.4,cb:4.6},{n:'培根',e:'🥓',c:'meat',cal:541,f:42.0,p:38.0,cb:1.7},{n:'腊肉',e:'🥓',c:'meat',cal:498,f:44.0,p:10.0,cb:6.0},{n:'带鱼',e:'🐟',c:'meat',cal:127,f:4.9,p:17.7,cb:0},
+  {n:'鸡蛋(煮)',e:'🥚',c:'dairy',cal:155,f:10.6,p:12.6,cb:1.2},{n:'鸡蛋(炒)',e:'🍳',c:'dairy',cal:196,f:14.8,p:11.5,cb:2.8},{n:'纯牛奶',e:'🥛',c:'dairy',cal:66,f:3.6,p:3.2,cb:4.8},{n:'酸奶(原味)',e:'🥛',c:'dairy',cal:72,f:2.7,p:2.5,cb:9.3},{n:'奶酪片',e:'🧀',c:'dairy',cal:328,f:25.0,p:22.0,cb:4.0},{n:'豆腐',e:'🧈',c:'dairy',cal:76,f:4.8,p:8.1,cb:3.0},{n:'豆浆',e:'🥛',c:'dairy',cal:31,f:1.6,p:2.9,cb:1.1},{n:'毛豆',e:'🫘',c:'dairy',cal:131,f:5.7,p:13.1,cb:10.5},{n:'鹌鹑蛋',e:'🥚',c:'dairy',cal:160,f:11.1,p:12.8,cb:1.4},{n:'脱脂牛奶',e:'🥛',c:'dairy',cal:35,f:0.2,p:3.4,cb:4.9},
+  {n:'西兰花',e:'🥦',c:'veggie',cal:34,f:0.4,p:2.8,cb:6.6},{n:'番茄',e:'🍅',c:'veggie',cal:18,f:0.2,p:0.9,cb:3.5},{n:'黄瓜',e:'🥒',c:'veggie',cal:15,f:0.1,p:0.7,cb:2.7},{n:'菠菜',e:'🥬',c:'veggie',cal:23,f:0.4,p:2.9,cb:3.6},{n:'胡萝卜',e:'🥕',c:'veggie',cal:37,f:0.2,p:0.9,cb:8.0},{n:'生菜',e:'🥬',c:'veggie',cal:15,f:0.2,p:1.3,cb:2.0},{n:'土豆',e:'🥔',c:'veggie',cal:76,f:0.1,p:2.0,cb:17.2},{n:'香菇',e:'🍄',c:'veggie',cal:34,f:0.3,p:2.2,cb:6.3},{n:'白菜',e:'🥬',c:'veggie',cal:13,f:0.1,p:1.5,cb:2.2},{n:'芹菜',e:'🥬',c:'veggie',cal:14,f:0.1,p:0.7,cb:3.0},{n:'茄子',e:'🍆',c:'veggie',cal:25,f:0.2,p:1.0,cb:5.4},{n:'豆芽',e:'🌱',c:'veggie',cal:18,f:0.1,p:1.7,cb:2.6},
+  {n:'苹果',e:'🍎',c:'fruit',cal:52,f:0.2,p:0.3,cb:13.8},{n:'香蕉',e:'🍌',c:'fruit',cal:89,f:0.3,p:1.1,cb:22.8},{n:'橙子',e:'🍊',c:'fruit',cal:47,f:0.1,p:0.9,cb:11.8},{n:'葡萄',e:'🍇',c:'fruit',cal:69,f:0.2,p:0.7,cb:18.1},{n:'西瓜',e:'🍉',c:'fruit',cal:30,f:0.1,p:0.6,cb:6.8},{n:'草莓',e:'🍓',c:'fruit',cal:32,f:0.3,p:0.7,cb:7.7},{n:'芒果',e:'🥭',c:'fruit',cal:60,f:0.4,p:0.8,cb:15.0},{n:'猕猴桃',e:'🥝',c:'fruit',cal:61,f:0.5,p:1.1,cb:14.7},{n:'蓝莓',e:'🫐',c:'fruit',cal:57,f:0.3,p:0.7,cb:14.5},{n:'牛油果',e:'🥑',c:'fruit',cal:160,f:15.0,p:2.0,cb:9.0},{n:'榴莲',e:'🍈',c:'fruit',cal:147,f:5.3,p:2.0,cb:27.0},{n:'荔枝',e:'🍒',c:'fruit',cal:66,f:0.4,p:0.8,cb:16.5},
+  {n:'薯片',e:'🍟',c:'snack',cal:536,f:35.0,p:5.0,cb:51.0},{n:'辣条',e:'🌶️',c:'snack',cal:430,f:22.0,p:8.0,cb:50.0},{n:'奥利奥',e:'🍪',c:'snack',cal:480,f:21.0,p:5.0,cb:68.0},{n:'牛奶巧克力',e:'🍫',c:'snack',cal:546,f:32.0,p:7.0,cb:56.0},{n:'冰淇淋(香草)',e:'🍦',c:'snack',cal:207,f:11.0,p:3.5,cb:23.6},{n:'坚果(混合)',e:'🥜',c:'snack',cal:607,f:54.0,p:20.0,cb:15.0},{n:'饼干(苏打)',e:'🍪',c:'snack',cal:438,f:12.0,p:8.0,cb:73.0},{n:'蛋糕(奶油)',e:'🎂',c:'snack',cal:347,f:17.0,p:5.0,cb:43.0},{n:'泡芙',e:'🍩',c:'snack',cal:320,f:23.0,p:4.0,cb:25.0},{n:'肉松饼',e:'🥮',c:'snack',cal:427,f:20.0,p:9.5,cb:53.0},{n:'沙琪玛',e:'🍪',c:'snack',cal:506,f:26.0,p:6.5,cb:61.0},{n:'干脆面',e:'🍜',c:'snack',cal:495,f:24.0,p:9.0,cb:60.0},{n:'果冻',e:'🍮',c:'snack',cal:70,f:0,p:0.5,cb:17.0},{n:'牛肉干',e:'🥩',c:'snack',cal:250,f:4.0,p:45.0,cb:6.0},{n:'卤蛋',e:'🥚',c:'snack',cal:160,f:11.0,p:13.0,cb:1.5},
+  {n:'珍珠奶茶(中杯)',e:'🧋',c:'drink',cal:360,f:8.0,p:4.0,cb:66.0,ps:true},{n:'杨枝甘露',e:'🧋',c:'drink',cal:300,f:12.0,p:3.0,cb:46.0,ps:true},{n:'生椰拿铁',e:'☕',c:'drink',cal:180,f:7.0,p:4.0,cb:25.0,ps:true},{n:'美式咖啡(大)',e:'☕',c:'drink',cal:15,f:0,p:0.5,cb:2.0,ps:true},{n:'拿铁(大)',e:'☕',c:'drink',cal:200,f:9.0,p:8.0,cb:20.0,ps:true},{n:'可口可乐',e:'🥤',c:'drink',cal:42,f:0,p:0,cb:10.6},{n:'雪碧',e:'🥤',c:'drink',cal:41,f:0,p:0,cb:10.3},{n:'橙汁',e:'🧃',c:'drink',cal:45,f:0.1,p:0.6,cb:10.4},{n:'啤酒',e:'🍺',c:'drink',cal:43,f:0,p:0.5,cb:3.6},{n:'白酒',e:'🍶',c:'drink',cal:298,f:0,p:0,cb:0.5},{n:'柠檬茶',e:'🧃',c:'drink',cal:40,f:0,p:0,cb:10.0},{n:'冰美式',e:'☕',c:'drink',cal:10,f:0,p:0.3,cb:1.0,ps:true},{n:'星冰乐',e:'🧋',c:'drink',cal:380,f:15.0,p:6.0,cb:54.0,ps:true},{n:'椰子水',e:'🧃',c:'drink',cal:19,f:0.2,p:0.4,cb:3.7},{n:'运动饮料',e:'🧃',c:'drink',cal:26,f:0,p:0,cb:6.4},{n:'抹茶拿铁',e:'🍵',c:'drink',cal:230,f:8.0,p:7.0,cb:32.0,ps:true}
 ];
 
 var CATS = {
@@ -346,7 +346,11 @@ function switchTab(name){
   if(name==='settings') renderSettings();
 }
 document.getElementById('bottomNav').addEventListener('click',function(e){
-  var btn=e.target.closest('.nav-item'); if(btn) switchTab(btn.dataset.tab);
+  try {
+    var el = e.target.nodeType === 3 ? e.target.parentNode : e.target;
+    var btn = el.closest ? el.closest('.nav-item') : null;
+    if(btn) switchTab(btn.dataset.tab);
+  } catch(err) { console.error('nav click err:', err); }
 });
 
 // ================ 首页 ================
@@ -391,7 +395,8 @@ function renderToday(){
     ml+='<div class="meal-block"><div class="meal-h"><span class="mh-name">'+MEALS[m]+'</span><span class="mh-sub">'+mSum.cal+' kcal</span></div>';
     if(mRecs.length){
       mRecs.forEach(function(r){
-        ml+='<div class="food-entry"><span class="fe-emoji '+CAT_ANIM[r.foodCat]+'">'+CAT_EMOJI[r.foodCat]+'</span><div class="fe-info"><span class="fe-name">'+r.foodName+'</span><span class="fe-detail">'+r.grams+'g · '+r.time+'</span></div><span class="fe-cal">'+r.intake.cal+' kcal</span><button class="fe-del" onclick="delFood('+r.id+')">&times;</button></div>';
+        var rEm = r.foodEmoji || CAT_EMOJI[r.foodCat] || '🍽️';
+        ml+='<div class="food-entry"><span class="fe-emoji '+CAT_ANIM[r.foodCat]+'">'+rEm+'</span><div class="fe-info"><span class="fe-name">'+r.foodName+'</span><span class="fe-detail">'+r.grams+'g · '+r.time+'</span></div><span class="fe-cal">'+r.intake.cal+' kcal</span><button class="fe-del" onclick="delFood('+r.id+')">&times;</button></div>';
       });
     } else {
       ml+='<div class="meal-empty-hint">还没有记录 ~</div>';
@@ -452,10 +457,11 @@ function renderAdd(){
   });
   document.getElementById('catBar').innerHTML = ct;
 
-  // 食物 — 用 data-index + 事件委托替代 inline onclick
+  // 食物 — onclick 为主 + 事件委托兜底
   var fl='';
   currentFoods.forEach(function(f,i){
-    fl+='<div class="food-item" data-fi="'+i+'"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+CAT_EMOJI[f.c]+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
+    var em = f.e || CAT_EMOJI[f.c] || '🍽️';
+    fl+='<div class="food-item" data-fi="'+i+'" onclick="openFood('+i+')"><span class="fi-emoji '+CAT_ANIM[f.c]+'">'+em+'</span><div class="fi-info"><span class="fi-name">'+f.n+'</span><span class="fi-nutri">'+f.cal+' kcal/'+(f.ps?'份':'100g')+' · 脂肪'+f.f+'g · 蛋白'+f.p+'g</span></div><span class="fi-arrow">›</span></div>';
   });
   document.getElementById('foodList').innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
 }
@@ -474,9 +480,10 @@ function openFood(i){
 
 function buildFoodModal(){
   if(!selFood) return;
+  var em = selFood.e || CAT_EMOJI[selFood.c] || '🍽️';
   var intake = doIntake(selFood, selGrams);
   var h = '';
-  h += '<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+CAT_EMOJI[selFood.c]+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
+  h += '<div class="m-header"><span class="m-emoji '+CAT_ANIM[selFood.c]+'">'+em+'</span><span class="m-name">'+selFood.n+'</span><span class="m-kcal">'+selFood.cal+' kcal/'+(selFood.ps?'份':'100g')+'</span></div>';
   h += '<div class="grams-box"><input type="number" id="gramsInput" value="'+selGrams+'" oninput="onGramsChange()" placeholder="克数"><span class="g-unit">g</span></div>';
   h += '<div class="quick-g">';
   [50,100,150,200,300,500].forEach(function(g){
@@ -497,12 +504,17 @@ function buildFoodModal(){
   document.getElementById('foodModal').classList.add('show');
 }
 
-// 事件委托：foodList 点击
+// 事件委托：foodList 点击 (兜底)
 document.getElementById('foodList').addEventListener('click', function(e){
-  var item = e.target.closest('.food-item');
-  if(!item) return;
-  var idx = parseInt(item.getAttribute('data-fi'));
-  if(!isNaN(idx)) openFood(idx);
+  try {
+    var el = e.target.nodeType === 3 ? e.target.parentNode : e.target;
+    var item = el.closest ? el.closest('.food-item') : null;
+    if(!item) return;
+    var idx = parseInt(item.getAttribute('data-fi'));
+    if(!isNaN(idx)) openFood(idx);
+  } catch(err) {
+    console.error('food click err:', err);
+  }
 });
 
 function onGramsChange(){
@@ -524,7 +536,7 @@ function confirmAdd(){
   if(!selFood||selGrams<=0) return;
   var recs=getRecs();
   recs.push({
-    id:Date.now(), foodName:selFood.n, foodCat:selFood.c,
+    id:Date.now(), foodName:selFood.n, foodCat:selFood.c, foodEmoji:selFood.e||CAT_EMOJI[selFood.c]||'🍽️',
     grams:selGrams, meal:selMeal, intake:doIntake(selFood,selGrams),
     time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})
   });
@@ -560,7 +572,7 @@ function onPhotoPicked(e){
     data.foods.forEach(function(f){
       var found=FOOD_DB.find(function(fd){ return fd.n.indexOf(f.name)>=0||f.name.indexOf(fd.n)>=0; });
       if(found&&f.weight>0){
-        recs.push({id:Date.now()+Math.random(),foodName:found.n,foodCat:found.c,grams:f.weight,meal:'lunch',intake:doIntake(found,f.weight),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});
+        recs.push({id:Date.now()+Math.random(),foodName:found.n,foodCat:found.c,foodEmoji:found.e||CAT_EMOJI[found.c]||'🍽️',grams:f.weight,meal:'lunch',intake:doIntake(found,f.weight),time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});
         added++;
       }
     });
