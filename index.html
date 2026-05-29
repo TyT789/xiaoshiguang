@@ -329,7 +329,7 @@ function LS(k){ try { return JSON.parse(localStorage.getItem(k)||'null'); }catch
 function SS(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 function getRecs(dk){ var all=LS('ft_records')||{}; return all[dk||curDate||todayKey()]||[]; }
 function saveRecs(dk,recs){ var all=LS('ft_records')||{}; all[dk||curDate||todayKey()]=recs; SS('ft_records',all); }
-function doIntake(food,g){ var r=f.ps?1:g/100; return {cal:Math.round(food.cal*r),fat:+(food.f*r).toFixed(1),protein:+(food.p*r).toFixed(1),carb:+(food.cb*r).toFixed(1)}; }
+function doIntake(food,g){ var r=food.ps?1:g/100; return {cal:Math.round(food.cal*r),fat:+(food.f*r).toFixed(1),protein:+(food.p*r).toFixed(1),carb:+(food.cb*r).toFixed(1)}; }
 function sumRecs(recs){ var c=0,f=0,p=0,cb=0; recs.forEach(function(r){ c+=r.intake.cal; f+=r.intake.fat; p+=r.intake.protein; cb+=r.intake.carb; }); return {cal:Math.round(c),fat:+f.toFixed(1),protein:+p.toFixed(1),carb:+cb.toFixed(1)}; }
 function getProfile(){ return LS('ft_profile')||{gender:'male',age:22,weightKg:65,heightCm:170,activityLevel:1.55,goal:'maintain'}; }
 function getTargets(){ return LS('ft_targets'); }
