@@ -284,7 +284,19 @@ select.picker { font-size: 14px; color: var(--text); background: var(--bg); bord
 
 <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="onPhotoPicked(event)">
 
+<div id="dbg" style="position:fixed;top:0;left:0;right:0;background:#333;color:#0f0;font-size:10px;padding:4px 8px;z-index:99999;font-family:monospace;max-height:60px;overflow-y:auto;display:none;"></div>
 <script>
+// 全局错误显示
+window.onerror = function(msg, url, line, col, err){
+  var d=document.getElementById('dbg'); d.style.display='block';
+  d.innerHTML = 'ERR: '+msg+' (line '+line+')<br>'+d.innerHTML;
+  return false;
+};
+function dbgLog(m){
+  var d=document.getElementById('dbg'); d.style.display='block';
+  d.innerHTML = m + '<br>' + d.innerHTML;
+}
+dbgLog('JS loaded v6');
 // ================ 数据定义 ================
 const FOOD_DB = [
   {n:'白米饭',e:'🍚',c:'staple',cal:116,f:0.3,p:2.6,cb:25.9},{n:'馒头',e:'🥟',c:'staple',cal:223,f:1.1,p:7.0,cb:44.2},{n:'面条(煮)',e:'🍜',c:'staple',cal:110,f:0.2,p:3.4,cb:23.0},{n:'红薯',e:'🍠',c:'staple',cal:86,f:0.1,p:1.6,cb:20.1},{n:'玉米',e:'🌽',c:'staple',cal:112,f:1.2,p:4.0,cb:22.8},{n:'全麦面包',e:'🍞',c:'staple',cal:246,f:3.4,p:10.6,cb:43.1},{n:'燕麦片',e:'🥣',c:'staple',cal:377,f:6.7,p:13.5,cb:66.3},{n:'小米粥',e:'🥣',c:'staple',cal:46,f:0.7,p:1.4,cb:8.4},{n:'糙米饭',e:'🍚',c:'staple',cal:123,f:0.9,p:2.7,cb:25.6},{n:'饺子(猪肉)',e:'🥟',c:'staple',cal:240,f:11.0,p:9.0,cb:26.0},{n:'包子(肉馅)',e:'🥟',c:'staple',cal:227,f:10.2,p:8.6,cb:24.5},{n:'油条',e:'🥖',c:'staple',cal:386,f:17.6,p:6.9,cb:50.1},{n:'吐司面包',e:'🍞',c:'staple',cal:278,f:4.5,p:9.0,cb:50.0},
@@ -336,6 +348,7 @@ function autoTargets(profile){
 
 // ================ Tab 切换 ================
 function switchTab(name){
+  dbgLog('switchTab: '+name);
   document.querySelectorAll('.tab-page').forEach(function(d){ d.style.display='none'; });
   document.getElementById('tab-'+name).style.display='block';
   document.querySelectorAll('#bottomNav .nav-item').forEach(function(n){ n.classList.remove('active'); });
@@ -447,7 +460,10 @@ function getFilteredFoods(){
 }
 
 function renderAdd(){
+  dbgLog('renderAdd start, activeCat='+activeCat);
+  try {
   currentFoods = getFilteredFoods();
+  dbgLog('currentFoods count='+currentFoods.length);
 
   // 分类
   var ct='';
@@ -458,7 +474,6 @@ function renderAdd(){
   });
   var catEl = document.getElementById('catBar');
   catEl.innerHTML = ct;
-  // DOM 属性绑定 cat 按钮
   var catBtns = catEl.querySelectorAll('.cat-tag');
   for(var cbi=0; cbi<catBtns.length; cbi++){
     catBtns[cbi].onclick = (function(cat){
@@ -475,27 +490,33 @@ function renderAdd(){
   }
   var listEl = document.getElementById('foodList');
   listEl.innerHTML = fl || '<div style="text-align:center;padding:40px;color:#B8A090">没有匹配的食物</div>';
-  // DOM 属性绑定每个食物项的 onclick
   var foodItems = listEl.querySelectorAll('.food-item');
+  dbgLog('foodItems found: '+foodItems.length);
+  var boundCount = 0;
   for(var fii=0; fii<foodItems.length; fii++){
     foodItems[fii]._idx = fii;
-    foodItems[fii].onclick = function(){ openFood(this._idx); };
+    foodItems[fii].onclick = function(){ dbgLog('onclick fired idx='+this._idx); openFood(this._idx); };
+    if(typeof foodItems[fii].onclick === 'function') boundCount++;
   }
+  dbgLog('onclick bound: '+boundCount+'/'+foodItems.length);
+  } catch(e) { dbgLog('ERROR in renderAdd: '+e.message); }
 }
 
 function filterFoods(){ activeCat='all'; renderAdd(); }
 
-// 容器级 onclick — 手动 DOM 遍历找到 .food-item（零依赖，极简）
 function handleFoodClick(e){
   e = e || window.event;
   var t = e.target || e.srcElement;
+  dbgLog('handleFoodClick fired, target='+(t.tagName||'?'));
   while(t && t !== document.body){
     if(t.getAttribute && t.getAttribute('data-fi') !== null){
       var idx = parseInt(t.getAttribute('data-fi'));
+      dbgLog('handleFoodClick found idx='+idx);
       if(!isNaN(idx)){ openFood(idx); return; }
     }
     t = t.parentNode;
   }
+  dbgLog('handleFoodClick no match found');
 }
 
 function openFood(i){
